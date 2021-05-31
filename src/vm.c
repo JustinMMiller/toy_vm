@@ -20,7 +20,7 @@ int init_vm(VM *vm, void *prog, unsigned short prog_len, void *data, unsigned sh
     vm->state_ = RUNNING;
     vm->tape_ = calloc(sizeof(char), MAX_DATA_SIZE);
     vm->program_ = calloc(sizeof(instruction), MAX_PROGRAM_SIZE);
-    memcpy(vm->program_, prog, min(MAX_PROGRAM_SIZE, prog_len));
+    memcpy(vm->program_, prog, min(MAX_PROGRAM_SIZE, prog_len) * sizeof(instruction));
     if (data)
     {
         memcpy(vm->tape_, data, min(data_len, MAX_DATA_SIZE));
