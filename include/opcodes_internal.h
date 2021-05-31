@@ -11,19 +11,17 @@ typedef char op;
  */
 typedef struct _branch_instr
 {
-    op code;
     char val;
     short pos;
-} branch_instr;
+} __attribute__((packed)) branch_instr;
 
 /**
  * @brief Data pointer instruction layout.
  */
 typedef struct _set_dataptr
 {
-    op code;
     short pos;
-} set_dataptr;
+} __attribute__((packed)) set_dataptr;
 
 /**
  * @brief Change symbol instruction layout.
@@ -31,7 +29,7 @@ typedef struct _set_dataptr
 typedef struct _change_symbol
 {
     char sym;
-} change_symbol;
+} __attribute__((packed)) change_symbol;
 
 typedef struct _instruction
 {
@@ -41,8 +39,8 @@ typedef struct _instruction
         set_dataptr datap;
         branch_instr branch;
         change_symbol change_sym;
-    };
-} instruction;
+    }__attribute__((packed));
+} __attribute__((packed)) instruction;
 
 // opcode handlers
 

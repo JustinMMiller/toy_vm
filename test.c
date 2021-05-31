@@ -21,6 +21,7 @@ int main(int argc, char **argv)
     VM vm;
     instruction inst;
     printf("Beginning test of toy vm\n");
+    printf("Size of instruction : %li\n", sizeof(instruction));
     inst.code = hlt;
     if (init_vm(&vm, &inst, 1, NULL, 0))
     {
