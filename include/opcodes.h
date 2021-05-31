@@ -8,6 +8,8 @@ typedef enum _opcode
     cs = 0xc0,
     bre = 0xb0,
     brne = 0xb1,
+    brlt = 0xb2,
+    brgt = 0xb3,
     hlt = 0xff
 } opcode;
 
