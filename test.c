@@ -4,6 +4,18 @@
 #include "vm.h"
 #include "opcodes_internal.h"
 
+void dump_vm_state(VM *vm)
+{
+    printf("State : %i\n", vm->state_);
+    printf("Exception : %i\n", vm->exception_.exception);
+    if (vm->exception_.exception)
+    {
+        printf("Faulting Instruction : %i\n", vm->exception_.faulting_instruction);
+    }
+    printf("Current IP: %i\n", vm->instruction_ptr_);
+    printf("Current data index: %i\n", vm->data_ptr_);
+}
+
 int main(int argc, char **argv)
 {
     VM vm;
@@ -16,9 +28,9 @@ int main(int argc, char **argv)
         if (state != HALTED)
         {
             printf("VM did not halt.\n");
-            printf("State : %i, vm.state_ : %i\n", state, vm.state_);
-            printf("vm.program.code: %i\n", vm.program_[vm.instruction_ptr_].code);
+            dump_vm_state(&vm);
         }
+        dump_vm_state(&vm);
         printf("HLT instruction behaved as expected\n");
     }
     else
