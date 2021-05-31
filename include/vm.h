@@ -27,7 +27,7 @@ typedef enum
 
 typedef struct _vm_exception
 {
-    unsigned short last_successful_instruction;
+    unsigned short faulting_instruction;
     vm_exception_code exception;
 } vm_exception;
 
@@ -37,12 +37,11 @@ typedef struct _VM
     unsigned short data_ptr_;
     program program_;
     char *tape_;
-    int program_size_;
     vm_state state_;
     vm_exception exception_;
 } VM;
 
-void init_vm(VM *vm);
+int init_vm(VM *vm, void *prog, unsigned short prog_len, void *data, unsigned short data_len);
 void destroy_vm(VM *vm);
 // Execute a single instruction.
 vm_state step(VM *vm);

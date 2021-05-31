@@ -2,12 +2,12 @@
 BUILD_DIR = build
 OUTPUT_DIR = output
 INCLUDE_DIR = include
-VM_LIB = vm.so
+VM_LIB = libvm.so
 
 all : create_dirs test vm_lib
 
 test : test.c vm_lib
-	gcc test.c -I$(INCLUDE_DIR) -o $(OUTPUT_DIR)/run
+	gcc -g test.c -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/run
 
 vm_lib : src/vm.c src/opcodes.c
 	gcc -c -fPIC src/vm.c -I$(INCLUDE_DIR) -o $(BUILD_DIR)/vm.o
