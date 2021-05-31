@@ -3,12 +3,17 @@
 
 typedef char op;
 
+/**
+ * @brief generic instruction layout.
+ */
 typedef struct _gen_instr
 {
     op code;
-    char unused[3];
 } gen_instr;
 
+/**
+ * @brief branch instruction layout.
+ */
 typedef struct _branch_instr
 {
     op code;
@@ -18,7 +23,6 @@ typedef struct _branch_instr
 
 /**
  * @brief Update data position.
- * 
  */
 typedef struct _set_dataptr
 {
@@ -28,9 +32,9 @@ typedef struct _set_dataptr
 
 typedef union _instruction
 {
+    gen_instr instr;
     set_dataptr datap;
     branch_instr branch;
-    gen_instr instr;
 } _instruction;
 
 #endif
