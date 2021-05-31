@@ -30,7 +30,6 @@ int main(int argc, char **argv)
             printf("VM did not halt.\n");
             dump_vm_state(&vm);
         }
-        dump_vm_state(&vm);
         printf("HLT instruction behaved as expected\n");
     }
     else

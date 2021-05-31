@@ -6,6 +6,9 @@ VM_LIB = libvm.so
 
 all : create_dirs test vm_lib
 
+run_tests : all
+	cd $(OUTPUT_DIR) && LD_LIBRARY_PATH=. ./run
+
 test : test.c vm_lib
 	gcc -g test.c -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/run
 
