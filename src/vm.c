@@ -49,42 +49,42 @@ vm_state step(VM *vm)
     }
     switch (vm->program_[vm->instruction_ptr_].code)
     {
-        case dl:
+        case (op)dl:
         {
             status = exec_data_left(vm);
             break;
         }
-        case dr:
+        case (op)dr:
         {
             status = exec_data_right(vm);
             break;
         }
-        case cs:
+        case (op)cs:
         {
             status = exec_change_symbol(vm);
             break;
         }
-        case bre:
+        case (op)bre:
         {
             status = exec_branch_eq(vm);
             break;
         }
-        case brne:
+        case (op)brne:
         {
             status = exec_branch_ne(vm);
             break;
         }
-        case brlt:
+        case (op)brlt:
         {
             status = exec_branch_lt(vm);
             break;
         }
-        case brgt:
+        case (op)brgt:
         {
             status = exec_branch_gt(vm);
             break;
         }
-        case hlt:
+        case (op)hlt:
         {
             status = exec_hlt(vm);
             state = HALTED;
