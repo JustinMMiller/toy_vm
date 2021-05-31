@@ -5,7 +5,8 @@ typedef enum _opcode_status
 {
     successful,
     exc_left_edge,
-    exc_right_edge
-} opcode_status
+    exc_right_edge,
+    exc_last_instr
+} opcode_status;
 
 #endif

@@ -7,15 +7,7 @@
 typedef char op;
 
 /**
- * @brief generic instruction layout.
- */
-typedef struct _gen_instr
-{
-    op code;
-} gen_instr;
-
-/**
- * @brief branch instruction layout.
+ * @brief Branch instruction layout.
  */
 typedef struct _branch_instr
 {
@@ -25,7 +17,7 @@ typedef struct _branch_instr
 } branch_instr;
 
 /**
- * @brief Update data position.
+ * @brief Data pointer instruction layout.
  */
 typedef struct _set_dataptr
 {
@@ -33,11 +25,23 @@ typedef struct _set_dataptr
     short pos;
 } set_dataptr;
 
-typedef union _instruction
+/**
+ * @brief Change symbol instruction layout.
+ */
+typedef struct _change_symbol
 {
-    gen_instr instr;
-    set_dataptr datap;
-    branch_instr branch;
+    char sym;
+} change_symbol;
+
+typedef struct _instruction
+{
+    op code;
+    union
+    {
+        set_dataptr datap;
+        branch_instr branch;
+        change_symbol change_sym;
+    };
 } instruction;
 
 // opcode handlers
@@ -45,7 +49,10 @@ typedef union _instruction
 opcode_status exec_data_left(VM *vm);
 opcode_status exec_data_right(VM *vm);
 opcode_status exec_change_symbol(VM *vm);
-opcode_status exec_branch(VM *vm);
+opcode_status exec_branch_eq(VM *vm);
+opcode_status exec_branch_ne(VM *vm);
+opcode_status exec_branch_lt(VM *vm);
+opcode_status exec_branch_gt(VM *vm);
 opcode_status exec_hlt(VM *vm);
 
 #endif

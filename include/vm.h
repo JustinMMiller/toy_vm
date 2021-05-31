@@ -6,6 +6,8 @@
 #define MAX_DATA_SIZE 0xffff
 #define MAX_PROGRAM_SIZE 0xffff
 
+typedef struct _instruction *program;
+
 typedef enum
 {
     NONE,
@@ -31,16 +33,20 @@ typedef struct _vm_exception
 
 typedef struct _VM
 {
-    unsigned short instruction_ptr;
-    unsigned short data_ptr;
-    void *program;
-    char *tape;
-    int program_size;
-    vm_state state;
-    vm_exception exception;
+    unsigned short instruction_ptr_;
+    unsigned short data_ptr_;
+    program program_;
+    char *tape_;
+    int program_size_;
+    vm_state state_;
+    vm_exception exception_;
 } VM;
 
-void set_data();
-char get_data();
+void init_vm(VM *vm);
+void destroy_vm(VM *vm);
+// Execute a single instruction.
+vm_state step(VM *vm);
+// Run until hlt or exception.
+vm_state run(VM *vm);
 
 #endif
