@@ -1,6 +1,9 @@
 #ifndef OPCODES_INTERNAL_H
 #define OPCODES_INTERNAL_H
 
+#include "vm.h"
+#include "vm_internal.h"
+
 typedef char op;
 
 /**
@@ -35,6 +38,14 @@ typedef union _instruction
     gen_instr instr;
     set_dataptr datap;
     branch_instr branch;
-} _instruction;
+} instruction;
+
+// opcode handlers
+
+opcode_status exec_data_left(VM *vm);
+opcode_status exec_data_right(VM *vm);
+opcode_status exec_change_symbol(VM *vm);
+opcode_status exec_branch(VM *vm);
+opcode_status exec_hlt(VM *vm);
 
 #endif
