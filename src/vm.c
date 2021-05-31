@@ -87,11 +87,15 @@ vm_state step(VM *vm)
         case hlt:
         {
             status = exec_hlt(vm);
+            state = HALTED;
             break;
         }
         default:
         {
             except = UNKNOWN_OPCODE;
+            state = EXCEPTION_OCCURED;
+            vm->exception_.exception = except;
+            vm->exception_.faulting_instruction = initial_ip;
             break;
         }
     }
@@ -118,6 +122,7 @@ vm_state step(VM *vm)
         vm->exception_.exception = except;
         vm->exception_.faulting_instruction = initial_ip;
     }
+    vm->state_ = state;
     return vm->state_;
 }
 

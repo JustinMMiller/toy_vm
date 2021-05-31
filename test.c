@@ -17,8 +17,9 @@ int main(int argc, char **argv)
         {
             printf("VM did not halt.\n");
             printf("State : %i, vm.state_ : %i\n", state, vm.state_);
-            raise(SIGTRAP);
+            printf("vm.program.code: %i\n", vm.program_[vm.instruction_ptr_].code);
         }
+        printf("HLT instruction behaved as expected\n");
     }
     else
     {

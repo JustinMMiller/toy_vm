@@ -4,7 +4,7 @@
 #include "vm.h"
 #include "vm_internal.h"
 
-typedef char op;
+typedef int op;
 
 /**
  * @brief Branch instruction layout.
