@@ -9,7 +9,11 @@
 typedef enum
 {
     NONE,
-    UNKNOWN_OPCODE
+    UNKNOWN_OPCODE,
+    LEFT_END_OF_TAPE_REACHED,
+    RIGHT_END_OF_TAPE_REACHED,
+    // End of program reached without a hlt instruction.
+    END_OF_PROGRAM_REACHED
 } vm_exception_code;
 
 typedef enum
