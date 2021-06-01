@@ -18,12 +18,12 @@ int init_vm(VM *vm, void *prog, unsigned short prog_len, void *data, unsigned sh
     vm->exception_.faulting_instruction = 0;
     vm->instruction_ptr_ = 0;
     vm->state_ = RUNNING;
-    vm->tape_ = calloc(sizeof(char), MAX_DATA_SIZE);
-    vm->program_ = calloc(sizeof(instruction), MAX_PROGRAM_SIZE);
-    memcpy(vm->program_, prog, min(MAX_PROGRAM_SIZE, prog_len) * sizeof(instruction));
+    vm->tape_ = calloc(sizeof(char), MAX_DATA_SIZE+1);
+    vm->program_ = calloc(sizeof(instruction), MAX_PROGRAM_SIZE+1);
+    memcpy(vm->program_, prog, min(MAX_PROGRAM_SIZE+1, prog_len) * sizeof(instruction));
     if (data)
     {
-        memcpy(vm->tape_, data, min(data_len, MAX_DATA_SIZE));
+        memcpy(vm->tape_, data, min(data_len, MAX_DATA_SIZE+1));
     }
     return 1;
 }
@@ -64,6 +64,11 @@ vm_state step(VM *vm)
             status = exec_change_symbol(vm);
             break;
         }
+        case (op)br:
+        {
+            status = exec_branch(vm);
+            break;
+        }
         case (op)bre:
         {
             status = exec_branch_eq(vm);
@@ -82,6 +87,11 @@ vm_state step(VM *vm)
         case (op)brgt:
         {
             status = exec_branch_gt(vm);
+            break;
+        }
+        case (op)setd:
+        {
+            status = exec_set_dataptr(vm);
             break;
         }
         case (op)hlt:

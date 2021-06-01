@@ -9,12 +9,12 @@ instruction test_hlt[] = {
 };
 
 instruction test_dl[] = {
-    {dl},
+    {dl, 1},
     {hlt}
 };
 
 instruction test_dr[] = {
-    {dr},
+    {dr, 1},
     {hlt}
 };
 
@@ -42,10 +42,15 @@ instruction test_brlt[] = {
 char test_brlt_data[] = {'a'};
 
 instruction test_brgt[] = {
-    {brgt, 0},
+    {brgt},
     {hlt}
 };
 char test_brgt_data[] = {'a'};
+
+instruction test_setd[] = {
+    {setd},
+    {hlt}
+};
 
 void dump_vm_state(VM *vm)
 {
@@ -54,7 +59,7 @@ void dump_vm_state(VM *vm)
     if (vm->exception_.exception != NONE)
     {
         printf("Faulting Instruction : %i\n", vm->exception_.faulting_instruction);
-        printf("opcode : %i\n", vm->program_[vm->exception_.faulting_instruction].code);
+        printf("opcode : %x\n", vm->program_[vm->exception_.faulting_instruction].code);
     }
     printf("Current IP: %i\n", vm->instruction_ptr_);
     printf("Current data index: %i\n", vm->data_ptr_);
@@ -116,6 +121,9 @@ int check_brgt_step(VM *vm, vm_state state)
 {
     return state == RUNNING && vm->instruction_ptr_ == 0;
 }
+
+check_result_func check_setd_step = check_dr_step;
+check_result_func check_setd_run = check_hlt_step;
 
 int run_step_test(program prog,
                   unsigned short prog_len,
@@ -197,6 +205,13 @@ int main(int argc, char **argv)
     {
         printf("Test passed!\n");
     }
+    printf("test_setd\n");
+    test_setd[0].set_datap.pos = 1;
+    res = run_step_test(test_setd, sizeof(test_setd), NULL, 0, check_setd_step);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
     printf("test_bre\n");
     res = run_step_test(test_bre, sizeof(test_bre), test_bre_data, sizeof(test_bre_data), check_bre_step);
     if (res)
@@ -253,6 +268,12 @@ int main(int argc, char **argv)
     {
         printf("Test passed!\n");
     }
+    printf("test_setd_run\n");
+    res = run_run_test(test_setd, sizeof(test_setd), NULL, 0, check_setd_run);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
     printf("test_bre_run\n");
     res = run_run_test(test_bre, sizeof(test_bre), test_bre_data, sizeof(test_bre_data), check_bre_run);
     if (res)
@@ -260,8 +281,6 @@ int main(int argc, char **argv)
         printf("Test passed!\n");
     }
     printf("test_brlt_run\n");
-    test_brlt[0].branch.pos = 0;
-    test_brlt[0].branch.val = 0;
     res = run_run_test(test_brlt, sizeof(test_brlt), test_brlt_data, sizeof(test_brlt_data), check_brlt_run);
     if (res)
     {
