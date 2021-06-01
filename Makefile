@@ -10,11 +10,11 @@ run_tests : all
 	cd $(OUTPUT_DIR) && LD_LIBRARY_PATH=. ./run
 
 test : test.c vm_lib
-	gcc -g test.c -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/run
+	gcc -g test.c -Wall -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/run
 
 vm_lib : src/vm.c src/opcodes.c
-	gcc -c -fPIC src/vm.c -I$(INCLUDE_DIR) -o $(BUILD_DIR)/vm.o
-	gcc -c -fPIC src/opcodes.c -I$(INCLUDE_DIR) -o $(BUILD_DIR)/opcodes.o
+	gcc -c -fPIC src/vm.c -Wall -I$(INCLUDE_DIR) -o $(BUILD_DIR)/vm.o
+	gcc -c -fPIC src/opcodes.c -Wall -I$(INCLUDE_DIR) -o $(BUILD_DIR)/opcodes.o
 	gcc -shared $(BUILD_DIR)/vm.o $(BUILD_DIR)/opcodes.o -o $(OUTPUT_DIR)/$(VM_LIB)
 
 create_dirs :

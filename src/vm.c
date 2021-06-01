@@ -49,6 +49,16 @@ vm_state step(VM *vm)
     }
     switch (vm->program_[vm->instruction_ptr_].code)
     {
+        case (op)iadd:
+        {
+            status = exec_data_add(vm);
+            break;
+        }
+        case (op)isub:
+        {
+            status = exec_data_sub(vm);
+            break;
+        }
         case (op)dl:
         {
             status = exec_data_left(vm);

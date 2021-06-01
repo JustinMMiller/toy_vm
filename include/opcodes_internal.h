@@ -36,7 +36,7 @@ typedef struct _change_symbol
  */
 typedef struct _data_adjust
 {
-    char adj;
+    char imm;
 } __attribute__((packed)) data_adjust;
 
 /**

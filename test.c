@@ -4,29 +4,143 @@
 #include "vm.h"
 #include "opcodes_internal.h"
 
+typedef int(*check_result_func)(VM *, vm_state);
+
+
 instruction test_hlt[] = {
     {hlt}
 };
 
+int check_hlt_step(VM *vm, vm_state state)
+{
+    return state == HALTED;
+}
+
+check_result_func check_hlt_run = check_hlt_step;
+
+
 instruction test_dl[] = {
-    {dl, 1},
+    {dl, {{1}}},
     {hlt}
 };
+
+int check_dl_step(VM *vm, vm_state state)
+{
+    // Moving the data pointer left from 0 is expected to
+    // trigger a LEFT_END_OF_TAPE_REACHED exception.
+    return state == EXCEPTION_OCCURED && vm->exception_.exception == LEFT_END_OF_TAPE_REACHED;
+}
+
+check_result_func check_dl_run = check_dl_step;
+
 
 instruction test_dr[] = {
-    {dr, 1},
+    {dr, {{1}}},
     {hlt}
 };
 
-instruction test_cs[] = {
-    {cs, 'c'},
+int check_dr_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->data_ptr_ == 1;
+}
+
+check_result_func check_dr_run = check_hlt_step;
+
+
+instruction test_madd[] = {
+    {madd, {{1}}},
     {hlt}
 };
+char test_madd_data[] = {1, 2};
+
+int check_madd_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->tape_[0] == 3;
+}
+
+int check_madd_run(VM *vm, vm_state state)
+{
+    return state == HALTED && vm->tape_[0] == 3;
+}
+
+
+instruction test_msub[] = {
+    {msub, {{1}}},
+    {hlt}
+};
+char test_msub_data[] = {2, 1};
+
+int check_msub_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->tape_[0] == 1;
+}
+
+int check_msub_run(VM *vm, vm_state state)
+{
+    return state == HALTED && vm->tape_[0] == 1;
+}
+
+
+instruction test_iadd[] = {
+    {iadd, {{1}}},
+    {hlt}
+};
+char test_iadd_data[] = {1};
+
+int check_iadd_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->tape_[0] == 2;
+}
+
+int check_iadd_run(VM *vm, vm_state state)
+{
+    return state == HALTED && vm->tape_[0] == 2;
+}
+
+
+instruction test_isub[] = {
+    {isub, {{1}}},
+    {hlt}
+};
+char test_isub_data[] = {3};
+
+int check_isub_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->tape_[0] == 2;
+}
+
+int check_isub_run(VM *vm, vm_state state)
+{
+    return state == HALTED && vm->tape_[0] == 2;
+}
+
+
+instruction test_cs[] = {
+    {cs, {{'c'}}},
+    {hlt}
+};
+
+int check_cs_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->tape_[0] == 'c';
+}
+
+int check_cs_run(VM *vm, vm_state state)
+{
+    return state == HALTED && vm->tape_[0] == 'c';
+}
+
 
 instruction test_br[] = {
     {br},
     {hlt}
 };
+
+int check_br_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->instruction_ptr_ == 0;
+}
+
 
 instruction test_bre[] = {
     {bre},
@@ -34,11 +148,25 @@ instruction test_bre[] = {
 };
 char test_bre_data[] = {'a'};
 
+int check_bre_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->instruction_ptr_ == 1;
+}
+
+check_result_func check_bre_run = check_hlt_step;
+
+
 instruction test_brne[] = {
     {brne},
     {hlt}
 };
 char test_brne_data[] = {'a'};
+
+int check_brne_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->instruction_ptr_ == 0;
+}
+
 
 instruction test_brlt[] = {
     {brlt},
@@ -46,16 +174,33 @@ instruction test_brlt[] = {
 };
 char test_brlt_data[] = {'a'};
 
+int check_brlt_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->instruction_ptr_ == 1;
+}
+
+check_result_func check_brlt_run = check_hlt_step;
+
+
 instruction test_brgt[] = {
     {brgt},
     {hlt}
 };
 char test_brgt_data[] = {'a'};
 
+int check_brgt_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->instruction_ptr_ == 0;
+}
+
+
 instruction test_setd[] = {
-    {setd},
+    {setd}, // pos set later before test case.
     {hlt}
 };
+
+check_result_func check_setd_step = check_dr_step;
+check_result_func check_setd_run = check_hlt_step;
 
 void dump_vm_state(VM *vm)
 {
@@ -69,71 +214,6 @@ void dump_vm_state(VM *vm)
     printf("Current IP: %i\n", vm->instruction_ptr_);
     printf("Current data index: %i\n", vm->data_ptr_);
 }
-
-typedef int(*check_result_func)(VM *, vm_state);
-
-int check_hlt_step(VM *vm, vm_state state)
-{
-    return state == HALTED;
-}
-
-check_result_func check_hlt_run = check_hlt_step;
-
-int check_dl_step(VM *vm, vm_state state)
-{
-    return state == EXCEPTION_OCCURED && vm->exception_.exception == LEFT_END_OF_TAPE_REACHED;
-}
-
-check_result_func check_dl_run = check_dl_step;
-
-int check_dr_step(VM *vm, vm_state state)
-{
-    return state == RUNNING && vm->data_ptr_ == 1;
-}
-
-check_result_func check_dr_run = check_hlt_step;
-
-int check_cs_step(VM *vm, vm_state state)
-{
-    return state == RUNNING && vm->tape_[0] == 'c';
-}
-
-int check_cs_run(VM *vm, vm_state state)
-{
-    return state == HALTED && vm->tape_[0] == 'c';
-}
-
-int check_br_step(VM *vm, vm_state state)
-{
-    return state == RUNNING && vm->instruction_ptr_ == 0;
-}
-
-int check_bre_step(VM *vm, vm_state state)
-{
-    return state == RUNNING && vm->instruction_ptr_ == 1;
-}
-
-check_result_func check_bre_run = check_hlt_step;
-
-int check_brne_step(VM *vm, vm_state state)
-{
-    return state == RUNNING && vm->instruction_ptr_ == 0;
-}
-
-int check_brlt_step(VM *vm, vm_state state)
-{
-    return state == RUNNING && vm->instruction_ptr_ == 1;
-}
-
-check_result_func check_brlt_run = check_hlt_step;
-
-int check_brgt_step(VM *vm, vm_state state)
-{
-    return state == RUNNING && vm->instruction_ptr_ == 0;
-}
-
-check_result_func check_setd_step = check_dr_step;
-check_result_func check_setd_run = check_hlt_step;
 
 int run_step_test(program prog,
                   unsigned short prog_len,
@@ -187,7 +267,6 @@ int run_run_test(program prog,
 
 int main(int argc, char **argv)
 {
-    VM vm;
     int res;
     printf("Beginning test of toy vm\n");
     printf("Size of instruction : %li\n", sizeof(instruction));
@@ -205,6 +284,30 @@ int main(int argc, char **argv)
     }
     printf("test_dr\n");
     res = run_step_test(test_dr, sizeof(test_dr), NULL, 0, check_dr_step);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
+    printf("test_madd\n");
+    res = run_step_test(test_madd, sizeof(test_madd), test_madd_data, sizeof(test_madd_data), check_madd_step);
+    if (res)
+    {
+        printf("Test passed\n");
+    }
+    printf("test_msub\n");
+    res = run_step_test(test_msub, sizeof(test_msub), test_msub_data, sizeof(test_msub_data), check_msub_step);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
+    printf("test_iadd\n");
+    res = run_step_test(test_iadd, sizeof(test_iadd), test_iadd_data, sizeof(test_iadd_data), check_iadd_step);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
+    printf("test_isub\n");
+    res = run_step_test(test_isub, sizeof(test_isub), test_isub_data, sizeof(test_isub_data), check_isub_step);
     if (res)
     {
         printf("Test passed!\n");
@@ -274,6 +377,24 @@ int main(int argc, char **argv)
     }
     printf("test_dr_run\n");
     res = run_run_test(test_dr, sizeof(test_dr), NULL, 0, check_dr_run);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
+    printf("test_madd_run\n");
+    res = run_run_test(test_madd, sizeof(test_madd), test_madd_data, sizeof(test_madd_data), check_madd_run);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
+    printf("test_iadd\n");
+    res = run_run_test(test_iadd, sizeof(test_iadd), test_iadd_data, sizeof(test_iadd_data), check_iadd_run);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
+    printf("test_isub\n");
+    res = run_run_test(test_isub, sizeof(test_isub), test_isub_data, sizeof(test_isub_data), check_isub_run);
     if (res)
     {
         printf("Test passed!\n");

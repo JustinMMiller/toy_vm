@@ -15,14 +15,14 @@ opcode_status advance_inst_ptr(VM *vm)
 opcode_status exec_data_add(VM *vm)
 {
     instruction da = vm->program_[vm->instruction_ptr_];
-    vm->tape_[vm->data_ptr_] += da.data_adj.adj;
+    vm->tape_[vm->data_ptr_] += da.data_adj.imm;
     return advance_inst_ptr(vm);
 }
 
 opcode_status exec_data_sub(VM *vm)
 {
     instruction da = vm->program_[vm->instruction_ptr_];
-    vm->tape_[vm->data_ptr_] -= da.data_adj.adj;
+    vm->tape_[vm->data_ptr_] -= da.data_adj.imm;
     return advance_inst_ptr(vm);
 }
 
