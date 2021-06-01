@@ -23,6 +23,11 @@ instruction test_cs[] = {
     {hlt}
 };
 
+instruction test_br[] = {
+    {br},
+    {hlt}
+};
+
 instruction test_bre[] = {
     {bre},
     {hlt}
@@ -96,6 +101,11 @@ int check_cs_step(VM *vm, vm_state state)
 int check_cs_run(VM *vm, vm_state state)
 {
     return state == HALTED && vm->tape_[0] == 'c';
+}
+
+int check_br_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->instruction_ptr_ == 0;
 }
 
 int check_bre_step(VM *vm, vm_state state)
@@ -208,6 +218,12 @@ int main(int argc, char **argv)
     printf("test_setd\n");
     test_setd[0].set_datap.pos = 1;
     res = run_step_test(test_setd, sizeof(test_setd), NULL, 0, check_setd_step);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
+    printf("test_br\n");
+    res = run_step_test(test_br, sizeof(test_br), NULL, 0, check_br_step);
     if (res)
     {
         printf("Test passed!\n");
