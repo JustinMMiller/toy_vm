@@ -5,6 +5,8 @@ typedef enum _opcode
 {
     dadd = 0xa0,
     dsub = 0xa1,
+    madd = 0x10,
+    msub = 0x11,
     dl = 0xd0,
     dr = 0xd1,
     cs = 0xc0,

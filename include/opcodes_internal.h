@@ -47,6 +47,16 @@ typedef struct _data_ptr_shift
     unsigned short shift;
 } __attribute__((packed)) data_ptr_shift;
 
+/**
+ * @brief Memory based arithmetic instruction layout
+ * Adds/Subs the value at the specified location
+ * to the value at the current data pointer.
+ */
+typedef struct _memory_arithmetic
+{
+    unsigned short loc;
+} __attribute__((packed)) memory_arithmetic;
+
 typedef struct _instruction
 {
     op code;
@@ -57,6 +67,7 @@ typedef struct _instruction
         change_symbol change_sym;
         data_adjust data_adj;
         data_ptr_shift shift_data_ptr;
+        memory_arithmetic mem_arith;
     }__attribute__((packed));
 } __attribute__((packed)) instruction;
 
@@ -64,6 +75,8 @@ typedef struct _instruction
 
 opcode_status exec_data_add(VM *vm);
 opcode_status exec_data_sub(VM *vm);
+opcode_status exec_mem_add(VM *vm);
+opcode_status exec_mem_sub(VM *vm);
 opcode_status exec_data_left(VM *vm);
 opcode_status exec_data_right(VM *vm);
 opcode_status exec_change_symbol(VM *vm);

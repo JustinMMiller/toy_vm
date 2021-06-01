@@ -26,6 +26,20 @@ opcode_status exec_data_sub(VM *vm)
     return advance_inst_ptr(vm);
 }
 
+opcode_status exec_mem_add(VM *vm)
+{
+    instruction ma = vm->program_[vm->instruction_ptr_];
+    vm->tape_[vm->data_ptr_] += vm->tape_[ma.mem_arith.loc];
+    return advance_inst_ptr(vm);
+}
+
+opcode_status exec_mem_sub(VM *vm)
+{
+    instruction ma = vm->program_[vm->instruction_ptr_];
+    vm->tape_[vm->data_ptr_] -= vm->tape_[ma.mem_arith.loc];
+    return advance_inst_ptr(vm);
+}
+
 opcode_status exec_data_left(VM *vm)
 {
     instruction dps = vm->program_[vm->instruction_ptr_];

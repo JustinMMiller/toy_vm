@@ -59,6 +59,16 @@ vm_state step(VM *vm)
             status = exec_data_right(vm);
             break;
         }
+        case (op)madd:
+        {
+            status = exec_mem_add(vm);
+            break;
+        }
+        case (op)msub:
+        {
+            status = exec_mem_sub(vm);
+            break;
+        }
         case (op)cs:
         {
             status = exec_change_symbol(vm);
