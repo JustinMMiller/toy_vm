@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 
     dump_vm_state(&vm);
 
-    print_tape(&vm);
+    //print_tape(&vm);
 
     if (fp)
     {
