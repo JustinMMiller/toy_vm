@@ -202,19 +202,6 @@ instruction test_setd[] = {
 check_result_func check_setd_step = check_dr_step;
 check_result_func check_setd_run = check_hlt_step;
 
-void dump_vm_state(VM *vm)
-{
-    printf("State : %i\n", vm->state_);
-    printf("Exception : %i\n", vm->exception_.exception);
-    if (vm->exception_.exception != NONE)
-    {
-        printf("Faulting Instruction : %i\n", vm->exception_.faulting_instruction);
-        printf("opcode : %x\n", vm->program_[vm->exception_.faulting_instruction].code);
-    }
-    printf("Current IP: %i\n", vm->instruction_ptr_);
-    printf("Current data index: %i\n", vm->data_ptr_);
-}
-
 int run_step_test(program prog,
                   unsigned short prog_len,
                   void *test_data,

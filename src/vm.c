@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -26,6 +27,19 @@ int init_vm(VM *vm, void *prog, unsigned short prog_len, void *data, unsigned sh
         memcpy(vm->tape_, data, min(data_len, MAX_DATA_SIZE+1));
     }
     return 1;
+}
+
+void dump_vm_state(VM *vm)
+{
+    printf("State : %i\n", vm->state_);
+    printf("Exception : %i\n", vm->exception_.exception);
+    if (vm->exception_.exception != NONE)
+    {
+        printf("Faulting Instruction : %i\n", vm->exception_.faulting_instruction);
+        printf("opcode : %x\n", vm->program_[vm->exception_.faulting_instruction].code);
+    }
+    printf("Current IP: %i\n", vm->instruction_ptr_);
+    printf("Current data index: %i\n", vm->data_ptr_);
 }
 
 void destroy_vm(VM *vm)
@@ -146,6 +160,11 @@ vm_state step(VM *vm)
             case exc_last_instr:
             {
                 except = END_OF_PROGRAM_REACHED;
+                break;
+            }
+            default:
+            {
+                return vm->state_;
             }
         }
         state = EXCEPTION_OCCURED;

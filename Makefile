@@ -4,13 +4,19 @@ OUTPUT_DIR = output
 INCLUDE_DIR = include
 VM_LIB = libvm.so
 
-all : create_dirs test vm_lib
+all : create_dirs test vm_lib loader
 
-run_tests : all
-	cd $(OUTPUT_DIR) && LD_LIBRARY_PATH=. ./run
+run_tests : all test
+	cd $(OUTPUT_DIR) && LD_LIBRARY_PATH=. ./test
+
+run_loader :
+	cd $(OUTPUT_DIR) && LD_LIBRARY_PATH=. ./loader ../test.bin
 
 test : test.c vm_lib
-	gcc -g test.c -Wall -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/run
+	gcc -g test.c -Wall -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/$@
+
+loader : vm_lib src/loader.c
+	gcc -g src/loader.c -Wall -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/$@
 
 vm_lib : src/vm.c src/opcodes.c
 	gcc -c -fPIC src/vm.c -Wall -I$(INCLUDE_DIR) -o $(BUILD_DIR)/vm.o

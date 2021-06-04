@@ -47,5 +47,6 @@ void destroy_vm(VM *vm);
 vm_state step(VM *vm);
 // Run until hlt or exception.
 vm_state run(VM *vm);
+void dump_vm_state(VM *vm);
 
 #endif
