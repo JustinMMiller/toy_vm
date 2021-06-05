@@ -22,7 +22,7 @@ instruction parse_line(char *line)
         if (lexemes == 1)
         {
             ret.code = dl;
-            ret.data_adj.imm = imm;
+            ret.shift_data_ptr.shift = imm;
         }
     }
     else if (!strcmp(opcode, "dr"))
@@ -32,7 +32,7 @@ instruction parse_line(char *line)
         if (lexemes == 1)
         {
             ret.code = dr;
-            ret.data_adj.imm = imm;
+            ret.shift_data_ptr.shift = imm;
         }
     }
     else if (!strcmp(opcode, "madd"))

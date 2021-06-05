@@ -55,7 +55,11 @@ int main(int argc, char **argv)
     dump_vm_state(&vm);
 
     //print_tape(&vm);
-    printf("%s\n", vm.tape_);
+    //printf("%s\n", vm.tape_);
+    for (int i = 0; i < 20; i++)
+    {
+        printf("%i : %i\n", i, vm.tape_[i]);
+    }
 
     if (fp)
     {

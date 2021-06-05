@@ -1,0 +1,17 @@
+setd 0x10
+bre 0 3
+bre 1 6
+cs 1
+dr 1
+br 9
+cs 1
+dl 1
+br 9
+bre 0 0xb
+bre 1 0xe
+cs 1
+dl 1
+br 1
+cs 1
+dr 1
+hlt
