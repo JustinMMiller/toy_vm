@@ -1,2 +1,2 @@
-iadd 0x41
+iadd 'A'
 hlt

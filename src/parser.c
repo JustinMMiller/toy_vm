@@ -60,7 +60,15 @@ instruction parse_line(char *line)
         unsigned short imm = 0;
         char imm_c = 0;
         lexemes = sscanf(line, "%*4s %hx", &imm);
-        imm_c = (char)imm;
+        if (!lexemes)
+        {
+            lexemes = sscanf(line, "%*4s '%c'", &imm_c);
+            imm = (unsigned short)imm_c;
+        }
+        else
+        {
+            imm_c = (char)imm;
+        }
         // If the immediate was not a char, we will return 0
         // to indicate error.
         if ((unsigned short)imm_c == imm && lexemes == 1)
@@ -74,7 +82,15 @@ instruction parse_line(char *line)
         unsigned short imm;
         char imm_c;
         lexemes = sscanf(line, "%*4s %hx", &imm);
-        imm_c = (char)imm;
+        if (!lexemes)
+        {
+            lexemes = sscanf(line, "%*4s '%c'", &imm_c);
+            imm = (unsigned short)imm_c;
+        }
+        else
+        {
+            imm_c = (char)imm;
+        }
         // If the immediate was not a char, we will return 0
         // to indicate error.
         if (imm_c == imm && lexemes == 1)
@@ -88,7 +104,15 @@ instruction parse_line(char *line)
         unsigned short imm;
         char imm_c;
         lexemes = sscanf(line, "%*4s %hx", &imm);
-        imm_c = (char)imm;
+        if (!lexemes)
+        {
+            lexemes = sscanf(line, "%*4s '%c'", &imm_c);
+            imm = (unsigned short)imm_c;
+        }
+        else
+        {
+            imm_c = (char)imm;
+        }
         // If the immediate was not a char, we will return 0
         // to indicate error.
         if (imm_c == imm && lexemes == 1)
@@ -112,7 +136,15 @@ instruction parse_line(char *line)
         unsigned short imm, loc;
         char imm_c;
         lexemes = sscanf(line, "%*4s %hx %hx", &imm, &loc);
-        imm_c = (char)imm;
+        if (!lexemes)
+        {
+            lexemes = sscanf(line, "%*4s '%c' %hx", &imm_c, &loc);
+            imm = (unsigned short)imm_c;
+        }
+        else
+        {
+            imm_c = (char)imm;
+        }
         if (lexemes == 2 && imm == imm_c)
         {
             ret.code = bre;
@@ -125,7 +157,15 @@ instruction parse_line(char *line)
         unsigned short imm, loc;
         char imm_c;
         lexemes = sscanf(line, "%*4s %hx %hx", &imm, &loc);
-        imm_c = (char)imm;
+        if (!lexemes)
+        {
+            lexemes = sscanf(line, "%*4s '%c' %hx", &imm_c, &loc);
+            imm = (unsigned short)imm_c;
+        }
+        else
+        {
+            imm_c = (char)imm;
+        }
         if (lexemes == 2 && imm == imm_c)
         {
             ret.code = brne;
@@ -138,7 +178,15 @@ instruction parse_line(char *line)
         unsigned short imm, loc;
         char imm_c;
         lexemes = sscanf(line, "%*4s %hx %hx", &imm, &loc);
-        imm_c = (char)imm;
+        if (!lexemes)
+        {
+            lexemes = sscanf(line, "%*4s '%c' %hx", &imm_c, &loc);
+            imm = (unsigned short)imm_c;
+        }
+        else
+        {
+            imm_c = (char)imm;
+        }
         if (lexemes == 2 && imm == imm_c)
         {
             ret.code = brlt;
@@ -151,7 +199,15 @@ instruction parse_line(char *line)
         unsigned short imm, loc;
         char imm_c;
         lexemes = sscanf(line, "%*4s %hx %hx", &imm, &loc);
-        imm_c = (char)imm;
+        if (!lexemes)
+        {
+            lexemes = sscanf(line, "%*4s '%c' %hx", &imm_c, &loc);
+            imm = (unsigned short)imm_c;
+        }
+        else
+        {
+            imm_c = (char)imm;
+        }
         if (lexemes == 2 && imm == imm_c)
         {
             ret.code = brgt;
