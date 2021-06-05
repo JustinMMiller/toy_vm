@@ -1,23 +1,16 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <stdio.h>
 
+#include "vm.h"
 
-char *OPERATION[] = {
-    "hlt",
-    "dl",
-    "dr",
-    "madd",
-    "msub",
-    "iadd",
-    "isub",
-    "cs",
-    "br",
-    "bre",
-    "brne",
-    "brlt",
-    "brgt",
-    "setd"
-};
+/**
+ * @brief Parse the given file into the given program
+ * @return The number of instructions parsed on success,
+ *         the negative index of the failed instruction
+ *         on failure.
+ */
+int parse_file(FILE *, program);
 
-#endif PARSER_H
+#endif // PARSER_H
