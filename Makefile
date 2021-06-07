@@ -18,14 +18,13 @@ test : test.c vm_lib
 loader : vm_lib src/loader.c
 	gcc -g src/loader.c -Wall -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/$@
 
-assembler : vm_lib src/assembler.c
-	gcc -g src/assembler.c -Wall -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/$@
+assembler : vm_lib src/assembler.c src/parser.c
+	gcc -g src/assembler.c src/parser.c -Wall -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/$@
 
-vm_lib : src/vm.c src/opcodes.c src/parser.c
+vm_lib : src/vm.c src/opcodes.c
 	gcc -c -fPIC src/vm.c -Wall -I$(INCLUDE_DIR) -o $(BUILD_DIR)/vm.o
 	gcc -c -fPIC src/opcodes.c -Wall -I$(INCLUDE_DIR) -o $(BUILD_DIR)/opcodes.o
-	gcc -c -fPIC src/parser.c -Wall -I$(INCLUDE_DIR) -o $(BUILD_DIR)/parser.o
-	gcc -shared $(BUILD_DIR)/vm.o $(BUILD_DIR)/opcodes.o $(BUILD_DIR)/parser.o -o $(OUTPUT_DIR)/$(VM_LIB)
+	gcc -shared $(BUILD_DIR)/vm.o $(BUILD_DIR)/opcodes.o -o $(OUTPUT_DIR)/$(VM_LIB)
 
 create_dirs :
 	if [ -d $(BUILD_DIR) ]; then echo ; else mkdir -p $(BUILD_DIR); fi
