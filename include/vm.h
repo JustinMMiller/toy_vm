@@ -39,6 +39,7 @@ typedef struct _VM
     char *tape_;
     vm_state state_;
     vm_exception exception_;
+    int debug;
 } VM;
 
 int init_vm(VM *vm, void *prog, unsigned short prog_len, void *data, unsigned short data_len);

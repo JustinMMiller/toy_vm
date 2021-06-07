@@ -26,6 +26,7 @@ int init_vm(VM *vm, void *prog, unsigned short prog_len, void *data, unsigned sh
     {
         memcpy(vm->tape_, data, min(data_len, MAX_DATA_SIZE+1));
     }
+    vm->debug = 0;
     return 1;
 }
 
@@ -65,88 +66,88 @@ vm_state step(VM *vm)
     {
         case (op)iadd:
         {
-            printf("iadd %i\n", vm->program_[vm->instruction_ptr_].data_adj.imm);
+            if (vm->debug)printf("iadd %i\n", vm->program_[vm->instruction_ptr_].data_adj.imm);
             status = exec_data_add(vm);
             break;
         }
         case (op)isub:
         {
-            printf("isub %i\n", vm->program_[vm->instruction_ptr_].data_adj.imm);
+            if (vm->debug)printf("isub %i\n", vm->program_[vm->instruction_ptr_].data_adj.imm);
             status = exec_data_sub(vm);
             break;
         }
         case (op)dl:
         {
-            printf("dl %i\n", vm->program_[vm->instruction_ptr_].shift_data_ptr.shift);
+            if (vm->debug)printf("dl %i\n", vm->program_[vm->instruction_ptr_].shift_data_ptr.shift);
             status = exec_data_left(vm);
             break;
         }
         case (op)dr:
         {
-            printf("dr %i\n", vm->program_[vm->instruction_ptr_].shift_data_ptr.shift);
+            if (vm->debug)printf("dr %i\n", vm->program_[vm->instruction_ptr_].shift_data_ptr.shift);
             status = exec_data_right(vm);
             break;
         }
         case (op)madd:
         {
             instruction i = vm->program_[vm->instruction_ptr_];
-            printf("madd %i\n", i.mem_arith.loc);
+            if (vm->debug)printf("madd %i\n", i.mem_arith.loc);
             status = exec_mem_add(vm);
             break;
         }
         case (op)msub:
         {
             instruction i = vm->program_[vm->instruction_ptr_];
-            printf("msub %i\n", i.mem_arith.loc);
+            if (vm->debug)printf("msub %i\n", i.mem_arith.loc);
             status = exec_mem_sub(vm);
             break;
         }
         case (op)cs:
         {
             instruction i = vm->program_[vm->instruction_ptr_];
-            printf("cs %i\n", i.change_sym.sym);
+            if (vm->debug)printf("cs %i\n", i.change_sym.sym);
             status = exec_change_symbol(vm);
             break;
         }
         case (op)br:
         {
             instruction i = vm->program_[vm->instruction_ptr_];
-            printf("br %i\n", i.branch.pos);
+            if (vm->debug)printf("br %i\n", i.branch.pos);
             status = exec_branch(vm);
             break;
         }
         case (op)bre:
         {
             instruction i = vm->program_[vm->instruction_ptr_];
-            printf("bre %i %i\n", i.branch.val, i.branch.pos);
+            if (vm->debug)printf("bre %i %i\n", i.branch.val, i.branch.pos);
             status = exec_branch_eq(vm);
             break;
         }
         case (op)brne:
         {
             instruction i = vm->program_[vm->instruction_ptr_];
-            printf("brne %i %i\n", i.branch.val, i.branch.pos);
+            if (vm->debug)printf("brne %i %i\n", i.branch.val, i.branch.pos);
             status = exec_branch_ne(vm);
             break;
         }
         case (op)brlt:
         {
             instruction i = vm->program_[vm->instruction_ptr_];
-            printf("brlt %i %i\n", i.branch.val, i.branch.pos);
+            if (vm->debug)printf("brlt %i %i\n", i.branch.val, i.branch.pos);
             status = exec_branch_lt(vm);
             break;
         }
         case (op)brgt:
         {
             instruction i = vm->program_[vm->instruction_ptr_];
-            printf("brgt %i %i\n", i.branch.val, i.branch.pos);
+            if (vm->debug)printf("brgt %i %i\n", i.branch.val, i.branch.pos);
             status = exec_branch_gt(vm);
             break;
         }
         case (op)setd:
         {
             instruction i = vm->program_[vm->instruction_ptr_];
-            printf("setd %i\n", i.set_datap.pos);
+            if (vm->debug)printf("setd %i\n", i.set_datap.pos);
             status = exec_set_dataptr(vm);
             break;
         }
