@@ -1,2 +1,2 @@
-brne 0 1
+brne 0x0 0x1
 hlt

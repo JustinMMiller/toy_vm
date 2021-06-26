@@ -1,22 +1,22 @@
 cs 'H'
-dr 1
+dr 0x1
 cs 'e'
-dr 1
+dr 0x1
 cs 'l'
-dr 1
+dr 0x1
 cs 'l'
-dr 1
+dr 0x1
 cs 'o'
-dr 1
+dr 0x1
 cs ' '
-dr 1
+dr 0x1
 cs 'W'
-dr 1
+dr 0x1
 cs 'o'
-dr 1
+dr 0x1
 cs 'r'
-dr 1
+dr 0x1
 cs 'l'
-dr 1
+dr 0x1
 cs 'd'
 hlt
