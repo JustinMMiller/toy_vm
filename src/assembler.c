@@ -47,6 +47,7 @@ int main(int argc, char **argv)
         printf("Instruction %i failed to parse!\n", -instructions_parsed);
         return __LINE__;
     }
+    if (toy) free(toy);
     fclose(finput);
     fclose(foutput);
     return instructions_parsed < 0 ? instructions_parsed : 0;
