@@ -47,6 +47,18 @@ int check_dr_step(VM *vm, vm_state state)
 check_result_func check_dr_run = check_hlt_step;
 
 
+instruction test_dr_dl[] = {
+    {dr, {{1}}},
+    {dl, {{1}}},
+    {hlt}
+};
+
+int check_dr_dl_run(VM *vm, vm_state state)
+{
+    return state == HALTED && vm->data_ptr_ == 0;
+}
+
+
 instruction test_madd[] = {
     {madd, {{1}}},
     {hlt}
@@ -364,6 +376,12 @@ int main(int argc, char **argv)
     }
     printf("test_dr_run\n");
     res = run_run_test(test_dr, sizeof(test_dr), NULL, 0, check_dr_run);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
+    printf("test_dr_dl_run\n");
+    res = run_run_test(test_dr_dl, sizeof(test_dr_dl), NULL, 0, check_dr_dl_run);
     if (res)
     {
         printf("Test passed!\n");

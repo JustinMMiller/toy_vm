@@ -43,7 +43,7 @@ opcode_status exec_mem_sub(VM *vm)
 opcode_status exec_data_left(VM *vm)
 {
     instruction dps = vm->program_[vm->instruction_ptr_];
-    if (vm->data_ptr_ > dps.shift_data_ptr.shift)
+    if (vm->data_ptr_ >= dps.shift_data_ptr.shift)
     {
         vm->data_ptr_ -= dps.shift_data_ptr.shift;
         return advance_inst_ptr(vm);
@@ -62,7 +62,7 @@ opcode_status exec_data_right(VM *vm)
     // Add the shift as a separate operation to ensure
     // this is treated as integer addition instead of shorts.
     spec_adj += dps.shift_data_ptr.shift;
-    if (spec_adj < (unsigned int)MAX_DATA_SIZE)
+    if (spec_adj <= (unsigned int)MAX_DATA_SIZE)
     {
         vm->data_ptr_ += dps.shift_data_ptr.shift;
         return advance_inst_ptr(vm);

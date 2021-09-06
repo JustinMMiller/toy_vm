@@ -49,6 +49,8 @@ int main(int argc, char **argv)
     }
 
     init_vm(&vm, toy, toy_bin.program_len, initial_tape, toy_bin.data_len);
+    if (toy) free(toy);
+    if (initial_tape) free(initial_tape);
 
     vm_state res = run(&vm);
 
@@ -65,5 +67,6 @@ int main(int argc, char **argv)
     {
         fclose(fp);
     }
+    destroy_vm(&vm);
     return res != HALTED;
 }

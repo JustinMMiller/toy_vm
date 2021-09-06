@@ -5,13 +5,19 @@ INCLUDE_DIR = include
 VM_LIB = libvm.so
 CC = gcc
 
+ifdef DEBUG
+DEBUGGER = valgrind
+else
+DEBUGGER = 
+endif
+
 all : create_dirs test vm_lib loader assembler test
 
 run_tests : all test
-	cd $(OUTPUT_DIR) && LD_LIBRARY_PATH=. ./test
+	cd $(OUTPUT_DIR) && LD_LIBRARY_PATH=. $(DEBUGGER) ./test
 
 run_loader : create_dirs loader
-	cd $(OUTPUT_DIR) && LD_LIBRARY_PATH=. ./loader ../test.bin
+	cd $(OUTPUT_DIR) && LD_LIBRARY_PATH=. $(DEBUGGER) ./loader ../test.bin
 
 test : test.c vm_lib
 	$(CC) -g test.c -Wall -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/$@

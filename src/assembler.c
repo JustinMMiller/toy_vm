@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     }
     else
     {
-        printf("Instruction %i failed to parse!\n", instructions_parsed);
+        printf("Instruction %i failed to parse!\n", -instructions_parsed);
         return __LINE__;
     }
     fclose(finput);

@@ -153,6 +153,7 @@ vm_state step(VM *vm)
         }
         case (op)hlt:
         {
+            if (vm->debug)printf("hlt\n");
             status = exec_hlt(vm);
             state = HALTED;
             break;
