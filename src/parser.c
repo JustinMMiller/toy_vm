@@ -1,5 +1,6 @@
 #include <regex.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "hash_table.h"
@@ -20,14 +21,14 @@ typedef enum _label_kind
     code = 1,
     data = 2,
     // Represent references that aren't resolved.
-    reloc_ind = 0x10,
-    reloc_code = reloc_ind | code,
-    reloc_data = reloc_ind | data
+    unresolved_ind = 0x10,
+    reloc_code = unresolved_ind | code,
+    reloc_data = unresolved_ind | data
 } label_kind;
 
 typedef struct _label
 {
-    char name[255];
+    char name[256];
     label_kind kind;
     // code or data "pointer".
     short loc;
@@ -35,32 +36,94 @@ typedef struct _label
 
 typedef struct _line
 {
-    char text[255];
+    char text[256];
     instruction inst;
     // index into label table.
     int label_ref;
 } line, *pline;
 
+typedef struct _dyn_array
+{
+    size_t member_size;
+    int populated;
+    int max_entries;
+    void *members;
+} dyn_array, *pdyn_array;
+
 typedef struct _parser_state
 {
-    short text_size;
-    short max_text_size;
-    pline text;
+    dyn_array text;
     // TODO Implement embedding data in .toy file
-    short data_size;
-    short max_data_size;
-    char *data;
-    int label_cnt;
-    int max_label_cnt;
-    plabel labels;
+    dyn_array data;
+    dyn_array labels;
 } parser_state, *pparser_state;
 
-instruction parse_line(pparser_state parse, char *line)
+void init_dyn_array(pdyn_array arr, size_t member_size)
+{
+    arr->member_size = member_size;
+    arr->populated = 0;
+    arr->max_entries = 32;
+    arr->members = calloc(arr->max_entries, arr->member_size);
+}
+
+void add_entry(pdyn_array arr, void *entry)
+{
+    if (arr->populated == arr->max_entries - 1)
+    {
+        arr->max_entries *= 2;
+        arr->members = realloc(arr->members, arr->max_entries * arr->member_size);
+    }
+    memcpy((char *)arr->members + (arr->populated * arr->member_size), entry, arr->member_size);
+    arr->populated++;
+}
+
+int reference_label(pparser_state parser, int location, char *label_name, label_kind kind)
+{
+    label l;
+    l.kind = kind;
+    plabel labels = parser->labels.members;
+    //printf("Label %s is at location %i\n", label_name, location);
+    for (int i = 0; i < parser->labels.populated; i++)
+    {
+        if (!strcmp(label_name, labels[i].name))
+        {
+            // Label definition, set loc and clear unresolved indicator.
+            if (labels[i].loc < 0 && location > 0)
+            {
+                labels[i].loc = location;
+                labels[i].kind &= ~unresolved_ind;
+            }
+            // Duplicate label, return failure.
+            else if (labels[i].loc > 0 && location > 0)
+            {
+                return -location;
+            }
+            return i;
+        }
+    }
+    l.loc = location;
+    strcpy(l.name, label_name);
+    if (location < 0)
+    {
+        l.kind |= unresolved_ind;
+    }
+    else
+    {
+        l.loc = (short)location;
+    }
+    add_entry(&(parser->labels), &l);
+    return parser->labels.populated - 1;
+}
+
+int parse_instruction(pparser_state parser, int line_index)
 {
     instruction ret = {0};
     int lexemes = 0;
     char opcode[5] = {0};
-    sscanf(line, "%4s", opcode);
+    char label_ref[256] = {0};
+    label_kind kind = 0;
+    pline text = (pline)parser->text.members;
+    sscanf(text[line_index].text, "%4s", opcode);
     if (!strcmp(opcode, "hlt"))
     {
         ret.code = hlt;
@@ -68,7 +131,7 @@ instruction parse_line(pparser_state parse, char *line)
     else if (!strcmp(opcode, "dl"))
     {
         unsigned short imm;
-        lexemes = sscanf(line, "%*4s %hx", &imm);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx", &imm);
         if (lexemes == 1)
         {
             ret.code = dl;
@@ -78,7 +141,7 @@ instruction parse_line(pparser_state parse, char *line)
     else if (!strcmp(opcode, "dr"))
     {
         unsigned short imm;
-        lexemes = sscanf(line, "%*4s %hx", &imm);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx", &imm);
         if (lexemes == 1)
         {
             ret.code = dr;
@@ -88,31 +151,47 @@ instruction parse_line(pparser_state parse, char *line)
     else if (!strcmp(opcode, "madd"))
     {
         unsigned short loc;
-        lexemes = sscanf(line, "%*4s %hx", &loc);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx", &loc);
+        if (!lexemes)
+        {
+            lexemes = sscanf(text[line_index].text, "%*4s &%256s", label_ref);
+            kind = data;
+        }
+        else
+        {
+            ret.mem_arith.loc = loc;
+        }
         if (lexemes == 1)
         {
             ret.code = madd;
-            ret.mem_arith.loc = loc;
         }
     }
     else if (!strcmp(opcode, "msub"))
     {
         unsigned short loc;
-        lexemes = sscanf(line, "%*4s %hx", &loc);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx", &loc);
+        if (!lexemes)
+        {
+            lexemes = sscanf(text[line_index].text, "%*4s &%256s", label_ref);
+            kind = data;
+        }
+        else
+        {
+            ret.mem_arith.loc = loc;
+        }
         if (lexemes == 1)
         {
             ret.code = msub;
-            ret.mem_arith.loc = loc;
         }
     }
     else if (!strcmp(opcode, "iadd"))
     {
         unsigned short imm = 0;
         char imm_c = 0;
-        lexemes = sscanf(line, "%*4s %hx", &imm);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx", &imm);
         if (!lexemes)
         {
-            lexemes = sscanf(line, "%*4s '%c'", &imm_c);
+            lexemes = sscanf(text[line_index].text, "%*4s '%c'", &imm_c);
             imm = (unsigned short)imm_c;
         }
         else
@@ -131,10 +210,10 @@ instruction parse_line(pparser_state parse, char *line)
     {
         unsigned short imm;
         char imm_c;
-        lexemes = sscanf(line, "%*4s %hx", &imm);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx", &imm);
         if (!lexemes)
         {
-            lexemes = sscanf(line, "%*4s '%c'", &imm_c);
+            lexemes = sscanf(text[line_index].text, "%*4s '%c'", &imm_c);
             imm = (unsigned short)imm_c;
         }
         else
@@ -153,10 +232,10 @@ instruction parse_line(pparser_state parse, char *line)
     {
         unsigned short imm;
         char imm_c;
-        lexemes = sscanf(line, "%*4s %hx", &imm);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx", &imm);
         if (!lexemes)
         {
-            lexemes = sscanf(line, "%*4s '%c'", &imm_c);
+            lexemes = sscanf(text[line_index].text, "%*4s '%c'", &imm_c);
             imm = (unsigned short)imm_c;
         }
         else
@@ -174,31 +253,53 @@ instruction parse_line(pparser_state parse, char *line)
     else if (!strcmp(opcode, "br"))
     {
         unsigned short loc;
-        lexemes = sscanf(line, "%*4s %hx", &loc);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx", &loc);
+        if (!lexemes)
+        {
+            lexemes = sscanf(text[line_index].text, "%*4s &%256s", label_ref);
+            kind = code;
+        }
+        else
+        {
+            ret.branch.pos = loc;
+        }
         if (lexemes == 1)
         {
             ret.code = br;
-            ret.branch.pos = loc;
         }
     }
     else if (!strcmp(opcode, "bre"))
     {
         unsigned short imm, loc;
         char imm_c;
-        lexemes = sscanf(line, "%*4s %hx %hx", &imm, &loc);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx %hx", &imm, &loc);
         if (!lexemes)
         {
-            lexemes = sscanf(line, "%*4s '%c' %hx", &imm_c, &loc);
+            lexemes = sscanf(text[line_index].text, "%*4s '%c' %hx", &imm_c, &loc);
+            if (lexemes == 1)
+            {
+                lexemes = sscanf(text[line_index].text, "%*4s '%c' &%256s", &imm_c, label_ref);
+                kind = code;
+            }
+            else
+            {
+                ret.branch.pos = loc;
+            }
             imm = (unsigned short)imm_c;
+        }
+        else if (lexemes == 1)
+        {
+            lexemes = sscanf(text[line_index].text, "%*4s %hx &%256s", &imm, label_ref);
+            kind = code;
         }
         else
         {
-            imm_c = (char)imm;
+            ret.branch.pos = loc;
         }
+        imm_c = (char)imm;
         if (lexemes == 2 && imm == imm_c)
         {
             ret.code = bre;
-            ret.branch.pos = loc;
             ret.branch.val = imm_c;
         }
     }
@@ -206,20 +307,34 @@ instruction parse_line(pparser_state parse, char *line)
     {
         unsigned short imm, loc;
         char imm_c;
-        lexemes = sscanf(line, "%*4s %hx %hx", &imm, &loc);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx %hx", &imm, &loc);
         if (!lexemes)
         {
-            lexemes = sscanf(line, "%*4s '%c' %hx", &imm_c, &loc);
+            lexemes = sscanf(text[line_index].text, "%*4s '%c' %hx", &imm_c, &loc);
+            if (lexemes == 1)
+            {
+                lexemes = sscanf(text[line_index].text, "%*4s '%c' &%256s", &imm_c, label_ref);
+                kind = code;
+            }
+            else
+            {
+                ret.branch.pos = loc;
+            }
             imm = (unsigned short)imm_c;
+        }
+        else if (lexemes == 1)
+        {
+            lexemes = sscanf(text[line_index].text, "%*4s %hx &%256s", &imm, label_ref);
+            kind = code;
         }
         else
         {
             imm_c = (char)imm;
+            ret.branch.pos = loc;
         }
         if (lexemes == 2 && imm == imm_c)
         {
             ret.code = brne;
-            ret.branch.pos = loc;
             ret.branch.val = imm_c;
         }
     }
@@ -227,20 +342,34 @@ instruction parse_line(pparser_state parse, char *line)
     {
         unsigned short imm, loc;
         char imm_c;
-        lexemes = sscanf(line, "%*4s %hx %hx", &imm, &loc);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx %hx", &imm, &loc);
         if (!lexemes)
         {
-            lexemes = sscanf(line, "%*4s '%c' %hx", &imm_c, &loc);
+            lexemes = sscanf(text[line_index].text, "%*4s '%c' %hx", &imm_c, &loc);
+            if (lexemes == 1)
+            {
+                lexemes = sscanf(text[line_index].text, "%*4s '%c' &%256s", &imm_c, label_ref);
+                kind = code;
+            }
+            else
+            {
+                ret.branch.pos = loc;
+            }
             imm = (unsigned short)imm_c;
+        }
+        else if (lexemes == 1)
+        {
+            lexemes = sscanf(text[line_index].text, "%*4s %hx &%256s", &imm, label_ref);
+            kind = code;
         }
         else
         {
             imm_c = (char)imm;
+            ret.branch.pos = loc;
         }
         if (lexemes == 2 && imm == imm_c)
         {
             ret.code = brlt;
-            ret.branch.pos = loc;
             ret.branch.val = imm_c;
         }
     }
@@ -248,59 +377,160 @@ instruction parse_line(pparser_state parse, char *line)
     {
         unsigned short imm, loc;
         char imm_c;
-        lexemes = sscanf(line, "%*4s %hx %hx", &imm, &loc);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx %hx", &imm, &loc);
         if (!lexemes)
         {
-            lexemes = sscanf(line, "%*4s '%c' %hx", &imm_c, &loc);
+            lexemes = sscanf(text[line_index].text, "%*4s '%c' %hx", &imm_c, &loc);
+            if (lexemes == 1)
+            {
+                lexemes = sscanf(text[line_index].text, "%*4s '%c' &%256s", &imm_c, label_ref);
+                kind = code;
+            }
+            else
+            {
+                ret.branch.pos = loc;
+            }
             imm = (unsigned short)imm_c;
+        }
+        else if (lexemes == 1)
+        {
+            lexemes = sscanf(text[line_index].text, "%*4s %hx &%256s", &imm, label_ref);
+            kind = code;
         }
         else
         {
             imm_c = (char)imm;
+            ret.branch.pos = loc;
         }
         if (lexemes == 2 && imm == imm_c)
         {
             ret.code = brgt;
-            ret.branch.pos = loc;
             ret.branch.val = imm_c;
         }
     }
     else if (!strcmp(opcode, "setd"))
     {
         unsigned short loc;
-        lexemes = sscanf(line, "%*4s %hx", &loc);
+        lexemes = sscanf(text[line_index].text, "%*4s %hx", &loc);
+        if (!lexemes)
+        {
+            lexemes = sscanf(text[line_index].text, "%*4s &%256s", label_ref);
+            kind = data;
+        }
+        else
+        {
+            ret.set_datap.pos = loc;
+        }
         if (lexemes == 1)
         {
             ret.code = setd;
-            ret.set_datap.pos = loc;
         }
     }
+    if (ret.code != 0)
+    {
+        text[line_index].inst = ret;
+        if (label_ref[0])
+        {
+            text[line_index].label_ref = reference_label(parser, -line_index, label_ref, kind);
+        }
+        return line_index;
+    }
+    return -line_index;
+}
+
+int parse_line(pparser_state parser, char *line)
+{
+    int ret = 0;
+    char label_name[256] = {0};
+    int lexemes = sscanf(line, ":%256s\n", label_name);
+    // : at the start of a line is a label
+    if (lexemes)
+    {
+        printf("%s\n", label_name);
+        ret = reference_label(parser, parser->text.populated, label_name, code);
+    }
+    else
+    {
+        struct _line l = {0};
+        // Assume no label reference by default.
+        l.label_ref = -1;
+        strcpy(l.text, line);
+        add_entry(&parser->text, &l);
+        ret = parse_instruction(parser, parser->text.populated - 1);
+    }
     return ret;
+}
+
+int relocate_instruction(pparser_state parser, int line_index)
+{
+    pline text = parser->text.members;
+    plabel labels = parser->labels.members;
+    line lin = text[line_index];
+    label lab = labels[lin.label_ref];
+    switch ((char)lin.inst.code)
+    {
+    case (char)br:
+    case (char)bre:
+    case (char)brne:
+    case (char)brlt:
+    case (char)brgt:
+        if (lab.kind != code)
+        {
+            return -line_index;
+        }
+        text[line_index].inst.branch.pos = lab.loc;
+        return line_index;
+    case (char)madd:
+    case (char)msub:
+        if (lab.kind != data)
+        {
+            return -line_index;
+        }
+        text[line_index].inst.mem_arith.loc = lab.loc;
+        return line_index;
+    case (char)setd:
+
+        if (lab.kind != data)
+        {
+            return -line_index;
+        }
+        text[line_index].inst.set_datap.pos = lab.loc;
+        return line_index;
+    default:
+        return -line_index;
+    }
+    return line_index;
 }
 
 int parse_file(FILE *fp, program toy_bin)
 {
     int i = 0;
-    char line[255] = {0};
+    int valid = 1;
+    char line[256] = {0};
     parser_state parser = {0};
-    for (; i <= MAX_PROGRAM_SIZE; i++)
+    //init_dyn_array(&(parser.data), sizeof(char));
+    init_dyn_array(&(parser.labels), sizeof(label));
+    init_dyn_array(&(parser.text), sizeof(struct _line));
+    while(fgets(line, sizeof(line), fp) != NULL)
     {
-        if (fgets(line, sizeof(line), fp) != NULL)
+        valid = parse_line(&parser, line);
+        if (valid < 0)
         {
-            toy_bin[i] = parse_line(&parser, line);
-            if (toy_bin[i].code == 0)
-            {
-                i = -(i + 1);
-                break;
-            }
-        }
-        else
-        {
-            break;
+            return valid;
         }
     }
-    // if fgets returns null on the first run,
-    // return -1 to indicate failure on the first
-    // instruction.
-    return i == 0 ? -1 : i;
+    pline text = parser.text.members;
+    for (; i < parser.text.populated; i++)
+    {
+        if (text[i].label_ref >= 0)
+        {
+            valid = relocate_instruction(&parser, i);
+            if (valid < 0)
+            {
+                return valid;
+            }
+        }
+        toy_bin[i] = text[i].inst;
+    }
+    return i;
 }
