@@ -446,7 +446,6 @@ int parse_line(pparser_state parser, char *line)
     // : at the start of a line is a label
     if (lexemes)
     {
-        printf("%s\n", label_name);
         ret = reference_label(parser, parser->text.populated, label_name, code);
     }
     else

@@ -1,7 +1,22 @@
 # Overview
 
 Each instruction is 4 bytes, each cell is 1 byte.
-Instructions are kept on a separate tape from data.
+Instructions are kept in a separate location from data.
+
+The following is a sample program that changes the second cell to 0x10
+and halts.
+```c
+cs 0x10
+:LoopBegin
+setd 0x0
+bre 0x0 &LoopEnd
+isub 0x1
+setd 0x1
+iadd 0x1
+br &LoopBegin
+:LoopEnd
+hlt
+```
 
 # Instructions
 
