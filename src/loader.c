@@ -9,7 +9,7 @@ void print_tape(VM *vm)
 {
     for (int i = 0; i < MAX_DATA_SIZE; i++)
     {
-        printf("%i : %x %c\n", i, vm->tape_[i], vm->tape_[i]);
+        printf("%i : %x %c\n", i, vm->tapes_[vm->tape_idx_][i], vm->tapes_[vm->tape_idx_][i]);
     }
 }
 
@@ -57,10 +57,10 @@ int main(int argc, char **argv)
     dump_vm_state(&vm);
 
     //print_tape(&vm);
-    //printf("%s\n", vm.tape_);
+    //printf("%s\n", vm.tapes_[vm->tape_idx_]);
     for (int i = 0; i < 20; i++)
     {
-        printf("%i : %i\n", i, vm.tape_[i]);
+        printf("%i : %i\n", i, vm.tapes_[vm.tape_idx_][i]);
     }
 
     if (fp)

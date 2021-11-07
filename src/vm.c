@@ -19,14 +19,19 @@ int init_vm(VM *vm, void *prog, unsigned short prog_len, void *data, unsigned sh
     vm->exception_.faulting_instruction = 0;
     vm->instruction_ptr_ = 0;
     vm->state_ = RUNNING;
-    vm->tape_ = calloc(sizeof(char), MAX_DATA_SIZE+1);
+    for (int i = 0; i < MAX_TAPES; i++)
+    {
+        vm->tapes_[i] = NULL;
+    }
+    vm->tape_idx_ = 0;
+    vm->tapes_[vm->tape_idx_] = calloc(MAX_DATA_SIZE+1, sizeof(char));
     vm->program_ = calloc(sizeof(instruction), MAX_PROGRAM_SIZE+1);
     memcpy(vm->program_, prog, min(MAX_PROGRAM_SIZE+1, prog_len) * sizeof(instruction));
     if (data)
     {
-        memcpy(vm->tape_, data, min(data_len, MAX_DATA_SIZE+1));
+        memcpy(vm->tapes_[vm->tape_idx_], data, min(data_len, MAX_DATA_SIZE+1));
     }
-    vm->debug = 0;
+    vm->debug = false;
     return 1;
 }
 
@@ -46,8 +51,13 @@ void dump_vm_state(VM *vm)
 void destroy_vm(VM *vm)
 {
     vm->state_ = HALTED;
-    free(vm->tape_);
-    vm->tape_ = NULL;
+    for (int i = 0; i < MAX_TAPES; i++)
+    {
+        if (vm->tapes_[i])
+        {
+            free(vm->tapes_[i]);
+        }
+    }
     free(vm->program_);
     vm->program_ = NULL;
 }
@@ -86,6 +96,12 @@ vm_state step(VM *vm)
         {
             if (vm->debug)printf("dr %i\n", vm->program_[vm->instruction_ptr_].shift_data_ptr.shift);
             status = exec_data_right(vm);
+            break;
+        }
+        case (op)dt:
+        {
+            if (vm->debug)printf("dt %i\n", vm->program_[vm->instruction_ptr_].shift_data_ptr.shift);
+            status = exec_set_data_tape(vm);
             break;
         }
         case (op)madd:
@@ -184,6 +200,11 @@ vm_state step(VM *vm)
             case exc_last_instr:
             {
                 except = END_OF_PROGRAM_REACHED;
+                break;
+            }
+            case exc_invalid_tape:
+            {
+                except = INVALID_TAPE_SPECIFIED;
                 break;
             }
             default:

@@ -26,6 +26,9 @@ Halts execution of the program.
 ## dl/dr \<n\>
 Shifts the data pointer left/right by *n* cells
 
+## dt \<n\>
+Switch to tape n.
+
 ## madd/msub \<m>
 Performs the operation *data_pointer -= / += *data[m]
 

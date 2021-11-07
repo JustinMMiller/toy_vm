@@ -6,6 +6,7 @@ typedef enum _opcode
     hlt = 0xff,
     dl = 0xd0,
     dr = 0xd1,
+    dt = 0xd2,
     madd = 0x10,
     msub = 0x11,
     iadd = 0xe0,

@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "vm.h"
 #include "opcodes.h"
 #include "opcodes_internal.h"
@@ -15,28 +17,28 @@ opcode_status advance_inst_ptr(VM *vm)
 opcode_status exec_data_add(VM *vm)
 {
     instruction da = vm->program_[vm->instruction_ptr_];
-    vm->tape_[vm->data_ptr_] += da.data_adj.imm;
+    vm->tapes_[vm->tape_idx_][vm->data_ptr_] += da.data_adj.imm;
     return advance_inst_ptr(vm);
 }
 
 opcode_status exec_data_sub(VM *vm)
 {
     instruction da = vm->program_[vm->instruction_ptr_];
-    vm->tape_[vm->data_ptr_] -= da.data_adj.imm;
+    vm->tapes_[vm->tape_idx_][vm->data_ptr_] -= da.data_adj.imm;
     return advance_inst_ptr(vm);
 }
 
 opcode_status exec_mem_add(VM *vm)
 {
     instruction ma = vm->program_[vm->instruction_ptr_];
-    vm->tape_[vm->data_ptr_] += vm->tape_[ma.mem_arith.loc];
+    vm->tapes_[vm->tape_idx_][vm->data_ptr_] += vm->tapes_[vm->tape_idx_][ma.mem_arith.loc];
     return advance_inst_ptr(vm);
 }
 
 opcode_status exec_mem_sub(VM *vm)
 {
     instruction ma = vm->program_[vm->instruction_ptr_];
-    vm->tape_[vm->data_ptr_] -= vm->tape_[ma.mem_arith.loc];
+    vm->tapes_[vm->tape_idx_][vm->data_ptr_] -= vm->tapes_[vm->tape_idx_][ma.mem_arith.loc];
     return advance_inst_ptr(vm);
 }
 
@@ -52,6 +54,25 @@ opcode_status exec_data_left(VM *vm)
     {
         // Left edge of tape hit.
         return exc_left_edge;
+    }
+}
+
+opcode_status exec_set_data_tape(VM *vm)
+{
+    instruction dps = vm->program_[vm->instruction_ptr_];
+    if (dps.shift_data_ptr.shift < MAX_TAPES)
+    {
+        if (vm->tapes_[dps.shift_data_ptr.shift] == NULL)
+        {
+            vm->tapes_[dps.shift_data_ptr.shift] = calloc(MAX_DATA_SIZE+1, sizeof(char));
+        }
+        vm->tape_idx_ = dps.shift_data_ptr.shift;
+        return advance_inst_ptr(vm);
+    }
+    else
+    {
+        // Invalid tape specified.
+        return exc_invalid_tape;
     }
 }
 
@@ -77,7 +98,7 @@ opcode_status exec_data_right(VM *vm)
 opcode_status exec_change_symbol(VM *vm)
 {
     instruction cs = vm->program_[vm->instruction_ptr_];
-    vm->tape_[vm->data_ptr_] = cs.change_sym.sym;
+    vm->tapes_[vm->tape_idx_][vm->data_ptr_] = cs.change_sym.sym;
     return advance_inst_ptr(vm);
 }
 
@@ -91,7 +112,7 @@ opcode_status exec_branch(VM *vm)
 opcode_status exec_branch_eq(VM *vm)
 {
     instruction br = vm->program_[vm->instruction_ptr_];
-    char data = vm->tape_[vm->data_ptr_];
+    char data = vm->tapes_[vm->tape_idx_][vm->data_ptr_];
     if (br.branch.val == data)
     {
         vm->instruction_ptr_ = br.branch.pos;
@@ -106,7 +127,7 @@ opcode_status exec_branch_eq(VM *vm)
 opcode_status exec_branch_ne(VM *vm)
 {
     instruction br = vm->program_[vm->instruction_ptr_];
-    char data = vm->tape_[vm->data_ptr_];
+    char data = vm->tapes_[vm->tape_idx_][vm->data_ptr_];
     if (data != br.branch.val)
     {
         vm->instruction_ptr_ = br.branch.pos;
@@ -121,7 +142,7 @@ opcode_status exec_branch_ne(VM *vm)
 opcode_status exec_branch_gt(VM *vm)
 {
     instruction br = vm->program_[vm->instruction_ptr_];
-    char data = vm->tape_[vm->data_ptr_];
+    char data = vm->tapes_[vm->tape_idx_][vm->data_ptr_];
     if (data > br.branch.val)
     {
         vm->instruction_ptr_ = br.branch.pos;
@@ -136,7 +157,7 @@ opcode_status exec_branch_gt(VM *vm)
 opcode_status exec_branch_lt(VM *vm)
 {
     instruction br = vm->program_[vm->instruction_ptr_];
-    char data = vm->tape_[vm->data_ptr_];
+    char data = vm->tapes_[vm->tape_idx_][vm->data_ptr_];
     if (data < br.branch.val)
     {
         vm->instruction_ptr_ = br.branch.pos;

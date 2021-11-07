@@ -148,6 +148,16 @@ int parse_instruction(pparser_state parser, int line_index)
             ret.shift_data_ptr.shift = imm;
         }
     }
+    else if (!strcmp(opcode, "dt"))
+    {
+        unsigned short imm;
+        lexemes = sscanf(text[line_index].text, "%*4s %hx", &imm);
+        if (lexemes == 1)
+        {
+            ret.code = dt;
+            ret.shift_data_ptr.shift = imm;
+        }
+    }
     else if (!strcmp(opcode, "madd"))
     {
         unsigned short loc;

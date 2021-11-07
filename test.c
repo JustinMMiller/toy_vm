@@ -46,6 +46,32 @@ int check_dr_step(VM *vm, vm_state state)
 
 check_result_func check_dr_run = check_hlt_step;
 
+instruction test_dt[] = {
+    {dt, {{1}}},
+    {cs, {{1}}},
+    {hlt}
+};
+
+int check_dt_step(VM *vm, vm_state state)
+{
+    return state == RUNNING && vm->tape_idx_ == 1;
+}
+
+int check_dt_run(VM *vm, vm_state state)
+{
+    return state == HALTED && vm->tape_idx_ == 1 && vm->tapes_[vm->tape_idx_][0] == 1;
+}
+
+instruction test_dt_exc[] = {
+    {dt, {{MAX_TAPES + 1}}},
+    {hlt}
+};
+
+int check_dt_exc(VM *vm, vm_state state)
+{
+    return state == EXCEPTION_OCCURED && vm->exception_.exception == INVALID_TAPE_SPECIFIED;
+}
+
 
 instruction test_dr_dl[] = {
     {dr, {{1}}},
@@ -67,12 +93,12 @@ char test_madd_data[] = {1, 2};
 
 int check_madd_step(VM *vm, vm_state state)
 {
-    return state == RUNNING && vm->tape_[0] == 3;
+    return state == RUNNING && vm->tapes_[vm->tape_idx_][0] == 3;
 }
 
 int check_madd_run(VM *vm, vm_state state)
 {
-    return state == HALTED && vm->tape_[0] == 3;
+    return state == HALTED && vm->tapes_[vm->tape_idx_][0] == 3;
 }
 
 
@@ -84,12 +110,12 @@ char test_msub_data[] = {2, 1};
 
 int check_msub_step(VM *vm, vm_state state)
 {
-    return state == RUNNING && vm->tape_[0] == 1;
+    return state == RUNNING && vm->tapes_[vm->tape_idx_][0] == 1;
 }
 
 int check_msub_run(VM *vm, vm_state state)
 {
-    return state == HALTED && vm->tape_[0] == 1;
+    return state == HALTED && vm->tapes_[vm->tape_idx_][0] == 1;
 }
 
 
@@ -101,12 +127,12 @@ char test_iadd_data[] = {1};
 
 int check_iadd_step(VM *vm, vm_state state)
 {
-    return state == RUNNING && vm->tape_[0] == 2;
+    return state == RUNNING && vm->tapes_[vm->tape_idx_][0] == 2;
 }
 
 int check_iadd_run(VM *vm, vm_state state)
 {
-    return state == HALTED && vm->tape_[0] == 2;
+    return state == HALTED && vm->tapes_[vm->tape_idx_][0] == 2;
 }
 
 
@@ -118,12 +144,12 @@ char test_isub_data[] = {3};
 
 int check_isub_step(VM *vm, vm_state state)
 {
-    return state == RUNNING && vm->tape_[0] == 2;
+    return state == RUNNING && vm->tapes_[vm->tape_idx_][0] == 2;
 }
 
 int check_isub_run(VM *vm, vm_state state)
 {
-    return state == HALTED && vm->tape_[0] == 2;
+    return state == HALTED && vm->tapes_[vm->tape_idx_][0] == 2;
 }
 
 
@@ -134,12 +160,12 @@ instruction test_cs[] = {
 
 int check_cs_step(VM *vm, vm_state state)
 {
-    return state == RUNNING && vm->tape_[0] == 'c';
+    return state == RUNNING && vm->tapes_[vm->tape_idx_][0] == 'c';
 }
 
 int check_cs_run(VM *vm, vm_state state)
 {
-    return state == HALTED && vm->tape_[0] == 'c';
+    return state == HALTED && vm->tapes_[vm->tape_idx_][0] == 'c';
 }
 
 
@@ -287,6 +313,18 @@ int main(int argc, char **argv)
     {
         printf("Test passed!\n");
     }
+    printf("test_dt\n");
+    res = run_step_test(test_dt, sizeof(test_dt), NULL, 0, check_dt_step);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
+    printf("test_dt_exc\n");
+    res = run_step_test(test_dt_exc, sizeof(test_dt_exc), NULL, 0, check_dt_exc);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
     printf("test_madd\n");
     res = run_step_test(test_madd, sizeof(test_madd), test_madd_data, sizeof(test_madd_data), check_madd_step);
     if (res)
@@ -376,6 +414,12 @@ int main(int argc, char **argv)
     }
     printf("test_dr_run\n");
     res = run_run_test(test_dr, sizeof(test_dr), NULL, 0, check_dr_run);
+    if (res)
+    {
+        printf("Test passed!\n");
+    }
+    printf("test_dt_run\n");
+    res = run_run_test(test_dt, sizeof(test_dt), NULL, 0, check_dt_run);
     if (res)
     {
         printf("Test passed!\n");
