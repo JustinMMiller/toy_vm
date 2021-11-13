@@ -4,7 +4,7 @@ OUTPUT_DIR = output
 INCLUDE_DIR = include
 VM_LIB = libvm.so
 CC = gcc
-FLAGS = -Wall
+FLAGS = -Wall -O3
 
 ifdef DEBUG
 DEBUGGER = valgrind

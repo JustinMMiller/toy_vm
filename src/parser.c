@@ -68,6 +68,10 @@ void init_dyn_array(pdyn_array arr, size_t member_size)
 
 void add_entry(pdyn_array arr, void *entry)
 {
+    if (arr->members == NULL)
+    {
+        return;
+    }
     if (arr->populated == arr->max_entries - 1)
     {
         arr->max_entries *= 2;
@@ -75,6 +79,19 @@ void add_entry(pdyn_array arr, void *entry)
     }
     memcpy((char *)arr->members + (arr->populated * arr->member_size), entry, arr->member_size);
     arr->populated++;
+}
+
+void destroy_dyn_array(pdyn_array arr)
+{
+    free(arr->members);
+    arr->members = NULL;
+}
+
+void destroy_parser(pparser_state parser)
+{
+    //destroy_dyn_array(&parser->data);
+    destroy_dyn_array(&parser->labels);
+    destroy_dyn_array(&parser->text);
 }
 
 int reference_label(pparser_state parser, int location, char *label_name, label_kind kind)

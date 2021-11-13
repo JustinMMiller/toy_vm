@@ -46,6 +46,7 @@ void dump_vm_state(VM *vm)
     }
     printf("Current IP: %i\n", vm->instruction_ptr_);
     printf("Current data index: %i\n", vm->data_ptr_);
+    printf("Current tape index: %i\n", vm->tape_idx_);
 }
 
 void destroy_vm(VM *vm)
