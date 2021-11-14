@@ -8,7 +8,7 @@ DISABLED_WARNINGS = -Wno-char-subscripts
 FLAGS = -Wall -O3 $(DISABLED_WARNINGS)
 
 ifdef DEBUG
-DEBUGGER = valgrind
+DEBUGGER = valgrind --leak-check=full
 else
 DEBUGGER = 
 endif
@@ -20,6 +20,9 @@ run_tests : all test
 
 run_loader : create_dirs loader
 	cd $(OUTPUT_DIR) && LD_LIBRARY_PATH=. $(DEBUGGER) ./loader ../test.bin
+
+run_assembler : create_dirs loader
+	cd $(OUTPUT_DIR) && LD_LIBRARY_PATH=. $(DEBUGGER) ./assembler ../test.toy ../test.bin
 
 test : test.c vm_lib
 	$(CC) -g test.c $(FLAGS) -I$(INCLUDE_DIR) -L./$(OUTPUT_DIR) -lvm -o $(OUTPUT_DIR)/$@

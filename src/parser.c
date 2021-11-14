@@ -542,6 +542,7 @@ int parse_file(FILE *fp, program toy_bin)
         valid = parse_line(&parser, line);
         if (valid < 0)
         {
+            destroy_parser(&parser);
             return valid;
         }
     }
@@ -553,10 +554,12 @@ int parse_file(FILE *fp, program toy_bin)
             valid = relocate_instruction(&parser, i);
             if (valid < 0)
             {
+                destroy_parser(&parser);
                 return valid;
             }
         }
         toy_bin[i] = text[i].inst;
     }
+    destroy_parser(&parser);
     return i;
 }
