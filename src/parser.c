@@ -528,15 +528,20 @@ int relocate_instruction(pparser_state parser, int line_index)
     return line_index;
 }
 
+void init_parser_state(pparser_state parser)
+{
+    init_dyn_array(&(parser->labels), sizeof(label));
+    init_dyn_array(&(parser->text), sizeof(struct _line));
+    //init_dyn_array(&(parser->data), sizeof(char));
+}
+
 int parse_file(FILE *fp, program toy_bin)
 {
     int i = 0;
     int valid = 1;
     char line[256] = {0};
     parser_state parser = {0};
-    //init_dyn_array(&(parser.data), sizeof(char));
-    init_dyn_array(&(parser.labels), sizeof(label));
-    init_dyn_array(&(parser.text), sizeof(struct _line));
+    init_parser_state(&parser);
     while(fgets(line, sizeof(line), fp) != NULL)
     {
         valid = parse_line(&parser, line);
