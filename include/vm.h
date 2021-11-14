@@ -40,7 +40,7 @@ typedef struct _VM
     unsigned short instruction_ptr_;
     unsigned short data_ptr_;
     program program_;
-    int tape_idx_;
+    char tape_idx_;
     char *tapes_[MAX_TAPES];
     vm_state state_;
     vm_exception exception_;

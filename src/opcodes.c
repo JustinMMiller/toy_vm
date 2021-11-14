@@ -60,13 +60,13 @@ opcode_status exec_data_left(VM *vm)
 opcode_status exec_set_data_tape(VM *vm)
 {
     instruction dps = vm->program_[vm->instruction_ptr_];
-    if (dps.shift_data_ptr.shift < MAX_TAPES)
+    if (dps.set_tape.tape < MAX_TAPES)
     {
-        if (vm->tapes_[dps.shift_data_ptr.shift] == NULL)
+        if (vm->tapes_[dps.set_tape.tape] == NULL)
         {
-            vm->tapes_[dps.shift_data_ptr.shift] = calloc(MAX_DATA_SIZE+1, sizeof(char));
+            vm->tapes_[dps.set_tape.tape] = calloc(MAX_DATA_SIZE+1, sizeof(char));
         }
-        vm->tape_idx_ = dps.shift_data_ptr.shift;
+        vm->tape_idx_ = dps.set_tape.tape;
         return advance_inst_ptr(vm);
     }
     else

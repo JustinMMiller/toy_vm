@@ -172,7 +172,7 @@ int parse_instruction(pparser_state parser, int line_index)
         if (lexemes == 1)
         {
             ret.code = dt;
-            ret.shift_data_ptr.shift = imm;
+            ret.set_tape.tape = imm;
         }
     }
     else if (!strcmp(opcode, "madd"))

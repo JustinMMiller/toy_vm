@@ -48,6 +48,14 @@ typedef struct _data_ptr_shift
 } __attribute__((packed)) data_ptr_shift;
 
 /**
+ * @brief Set tape index.
+ */
+typedef struct _change_tape
+{
+    char tape;
+} __attribute__((packed)) change_tape;
+
+/**
  * @brief Memory based arithmetic instruction layout
  * Adds/Subs the value at the specified location
  * to the value at the current data pointer.
@@ -67,6 +75,7 @@ typedef struct _instruction
         change_symbol change_sym;
         data_adjust data_adj;
         data_ptr_shift shift_data_ptr;
+        change_tape set_tape;
         memory_arithmetic mem_arith;
     }__attribute__((packed));
 } __attribute__((packed)) instruction;
