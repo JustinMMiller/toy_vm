@@ -16,7 +16,7 @@ typedef struct _hash_table
     int *capacity;
 } hash_table;
 
-int insert_element(hash_table *table, void *elem);
+void insert_element(hash_table *table, void *elem);
 void *get_element(hash_table *table, void *key);
 void init_table(hash_table *table, hash_func hash);
 

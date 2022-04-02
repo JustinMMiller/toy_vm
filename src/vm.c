@@ -35,10 +35,28 @@ int init_vm(VM *vm, void *prog, unsigned short prog_len, void *data, unsigned sh
     return 1;
 }
 
+char *get_vm_exception_string(VM *vm)
+{
+    #define X(except) \
+    if (vm->exception_.exception == except) return #except;
+    TOY_VM_EXCEPTIONS
+    #undef X
+    return NULL;
+}
+
+char *get_vm_state_string(VM *vm)
+{
+    #define X(state) \
+    if (vm->state_ == state) return #state;
+    TOY_VM_STATES
+    #undef X
+    return NULL;
+}
+
 void dump_vm_state(VM *vm)
 {
-    printf("State : %i\n", vm->state_);
-    printf("Exception : %i\n", vm->exception_.exception);
+    printf("State : %s\n", get_vm_state_string(vm));
+    printf("Exception : %s\n", get_vm_exception_string(vm));
     if (vm->exception_.exception != NONE)
     {
         printf("Faulting Instruction : %i\n", vm->exception_.faulting_instruction);

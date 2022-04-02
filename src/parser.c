@@ -18,10 +18,10 @@
 
 typedef enum _label_kind
 {
-    code = 1,
-    data = 2,
+    code = 0x1,
+    data = 0x2,
     // Represent references that aren't resolved.
-    unresolved_ind = 0x10,
+    unresolved_ind = 0x80,
     reloc_code = unresolved_ind | code,
     reloc_data = unresolved_ind | data
 } label_kind;
