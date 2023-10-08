@@ -465,6 +465,28 @@ int parse_instruction(pparser_state parser, int line_index)
     return -line_index;
 }
 
+#define DELIM " \t\n"
+
+int normalize_line(struct _line *l, char *line)
+{
+    int ret = 0;
+    char *copy = strdup(line);
+    printf("Input: %s\n", copy);
+    for (char *tok = strtok(copy, DELIM); tok != NULL; tok = strtok(NULL, DELIM))
+    {
+        if (strlen(l->text) + strlen(tok) > sizeof(l->text))
+        {
+            ret = -1;
+            break;
+        }
+        strcat(l->text, tok);
+        strcat(l->text, " ");
+    }
+    l->text[strlen(l->text)-1] = 0;
+    printf("Output: %s\n", l->text);
+    return ret;
+}
+
 int parse_line(pparser_state parser, char *line)
 {
     int ret = 0;
@@ -480,7 +502,12 @@ int parse_line(pparser_state parser, char *line)
         struct _line l = {0};
         // Assume no label reference by default.
         l.label_ref = -1;
-        strcpy(l.text, line);
+        ret = normalize_line(&l, line);
+        if (ret < 0)
+        {
+            ret = -parser->text.populated;
+            return ret;
+        }
         add_entry(&parser->text, &l);
         ret = parse_instruction(parser, parser->text.populated - 1);
     }
