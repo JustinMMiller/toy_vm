@@ -39,8 +39,8 @@ $(OUTPUT_DIR)/$(VM_LIB) : src/vm.c src/opcodes.c
 	$(CC) -shared $(BUILD_DIR)/vm.o $(BUILD_DIR)/opcodes.o -o $@
 
 create_dirs :
-	if [ -d $(BUILD_DIR) ]; then echo ; else mkdir -p $(BUILD_DIR); fi
-	if [ -d $(OUTPUT_DIR) ]; then echo ; else mkdir -p $(OUTPUT_DIR); fi
+	@if [ -d $(BUILD_DIR) ]; then echo ; else mkdir -p $(BUILD_DIR); fi
+	@if [ -d $(OUTPUT_DIR) ]; then echo ; else mkdir -p $(OUTPUT_DIR); fi
 
 clean :
 	rm -rf $(BUILD_DIR)
