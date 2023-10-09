@@ -11,22 +11,31 @@
 
 typedef struct _instruction *program;
 
-typedef enum
-{
-    NONE,
-    UNKNOWN_OPCODE,
-    LEFT_END_OF_TAPE_REACHED,
-    RIGHT_END_OF_TAPE_REACHED,
-    INVALID_TAPE_SPECIFIED,
-    // End of program reached without a hlt instruction.
-    END_OF_PROGRAM_REACHED
-} vm_exception_code;
+#define TOY_VM_EXCEPTIONS \
+X(NONE) \
+X(UNKNOWN_OPCODE) \
+X(LEFT_END_OF_TAPE_REACHED) \
+X(RIGHT_END_OF_TAPE_REACHED) \
+X(INVALID_TAPE_SPECIFIED) \
+X(END_OF_PROGRAM_REACHED)
 
 typedef enum
 {
-    RUNNING,
-    HALTED,
-    EXCEPTION_OCCURED
+    #define X(except) except,
+    TOY_VM_EXCEPTIONS
+    #undef X
+} vm_exception_code;
+
+#define TOY_VM_STATES \
+X(RUNNING) \
+X(HALTED) \
+X(EXCEPTION_OCCURED)
+
+typedef enum
+{
+    #define X(state) state,
+    TOY_VM_STATES
+    #undef X
 } vm_state;
 
 typedef struct _vm_exception
